@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
+const DATA_DIR = process.env.NODE_ENV === 'production' ? '/tmp' : path.join(process.cwd(), 'data')
 const QUEUE_FILE = path.join(DATA_DIR, 'commands.json')
 
 interface Command {
