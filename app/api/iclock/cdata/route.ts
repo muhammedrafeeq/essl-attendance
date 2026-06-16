@@ -3,10 +3,10 @@ import { insertLogs } from '@/lib/storage'
 import { upsertUsers } from '@/lib/users'
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
+  const searchParams = request.nextUrl.searchParams
   const sn = searchParams.get('SN') || searchParams.get('sn') || searchParams.get('serialno') || 'unknown'
 
-  console.log(`[ESSL] CDATA GET - SN: ${sn}, full URL: ${request.url}`)
+  console.log(`[ESSL] CDATA GET - SN: ${sn}, full URL: ${request.nextUrl.toString()}`)
 
   const responseText = [
     'GET OPTION FROM:' + sn,
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
+  const searchParams = request.nextUrl.searchParams
   const sn = searchParams.get('SN') || searchParams.get('sn') || searchParams.get('serialno') || 'unknown'
   const table = searchParams.get('table') || ''
 

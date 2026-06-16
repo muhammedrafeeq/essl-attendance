@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { dequeueCommand } from '@/lib/commands'
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
+  const searchParams = request.nextUrl.searchParams
   const sn = searchParams.get('SN') || searchParams.get('sn') || searchParams.get('serialno') || 'unknown'
 
   console.log(`[ESSL] GETREQUEST - SN: ${sn}`)
