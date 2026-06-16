@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { insertLogs } from '@/lib/storage'
+import { upsertUsers } from '@/lib/users'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -34,6 +35,24 @@ export async function POST(request: NextRequest) {
   const table = searchParams.get('table') || ''
 
   console.log(`[ESSL] POST /cdata from SN: ${sn}, table: ${table}`)
+
+  if (table === 'USERINFO') {
+    let body = ''
+    try { body = await request.text() } catch { /* empty */ }
+
+    const lines = body.trim().split('\n').filter((l) => l.trim())
+    const users = lines.map((line) => {
+      const [pin, name, , card, role] = line.trim().split('\t')
+      return { pin: pin || '', name: name || '', card: card || '', role: role || '0', device_sn: sn }
+    }).filter((u) => u.pin)
+
+    if (users.length > 0) {
+      upsertUsers(users)
+      console.log(`[ESSL] Synced ${users.length} users from ${sn}`)
+    }
+
+    return new NextResponse('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } })
+  }
 
   if (table !== 'ATTLOG') {
     console.log(`[ESSL] Ignoring non-ATTLOG table: ${table}`)
