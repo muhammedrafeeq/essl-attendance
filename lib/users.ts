@@ -1,8 +1,4 @@
-import fs from 'fs'
-import path from 'path'
-
-const DATA_DIR = process.env.NODE_ENV === 'production' ? '/tmp' : path.join(process.cwd(), 'data')
-const USERS_FILE = path.join(DATA_DIR, 'users.json')
+import sql from './db'
 
 export interface DeviceUser {
   pin: string
@@ -13,33 +9,22 @@ export interface DeviceUser {
   synced_at: string
 }
 
-function readUsers(): DeviceUser[] {
-  if (!fs.existsSync(USERS_FILE)) return []
-  try {
-    return JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8')) as DeviceUser[]
-  } catch {
-    return []
-  }
-}
-
-export function upsertUsers(incoming: Omit<DeviceUser, 'synced_at'>[]): void {
-  const existing = readUsers()
-  const now = new Date().toISOString()
-
+export async function upsertUsers(incoming: Omit<DeviceUser, 'synced_at'>[]): Promise<void> {
   for (const u of incoming) {
-    const idx = existing.findIndex((e) => e.pin === u.pin && e.device_sn === u.device_sn)
-    const record: DeviceUser = { ...u, synced_at: now }
-    if (idx !== -1) {
-      existing[idx] = record
-    } else {
-      existing.push(record)
-    }
+    await sql`
+      INSERT INTO device_users (pin, name, card, role, device_sn)
+      VALUES (${u.pin}, ${u.name}, ${u.card}, ${u.role}, ${u.device_sn})
+      ON CONFLICT (pin, device_sn) DO UPDATE
+      SET name = EXCLUDED.name, card = EXCLUDED.card, role = EXCLUDED.role, synced_at = now()
+    `
   }
-
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
-  fs.writeFileSync(USERS_FILE, JSON.stringify(existing, null, 2), 'utf-8')
 }
 
-export function getUsers(): DeviceUser[] {
-  return readUsers()
+export async function getUsers(): Promise<DeviceUser[]> {
+  const rows = await sql`
+    SELECT pin, name, card, role, device_sn, synced_at
+    FROM device_users
+    ORDER BY synced_at DESC
+  `
+  return rows as DeviceUser[]
 }

@@ -1,53 +1,24 @@
-import fs from 'fs'
-import path from 'path'
+import sql from './db'
 import { AttendanceLog } from './types'
 
-const DATA_DIR = process.env.NODE_ENV === 'production' ? '/tmp' : path.join(process.cwd(), 'data')
-const LOGS_FILE = path.join(DATA_DIR, 'attendance_logs.json')
-
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
-}
-
-function readLogs(): AttendanceLog[] {
-  ensureDataDir()
-  if (!fs.existsSync(LOGS_FILE)) {
-    return []
-  }
-  try {
-    const raw = fs.readFileSync(LOGS_FILE, 'utf-8')
-    return JSON.parse(raw) as AttendanceLog[]
-  } catch {
-    return []
-  }
-}
-
-function writeLogs(logs: AttendanceLog[]) {
-  ensureDataDir()
-  fs.writeFileSync(LOGS_FILE, JSON.stringify(logs, null, 2), 'utf-8')
-}
-
-export function insertLogs(
+export async function insertLogs(
   records: Omit<AttendanceLog, 'id' | 'created_at'>[]
-): AttendanceLog[] {
-  const existing = readLogs()
-  const now = new Date().toISOString()
-
-  const newLogs: AttendanceLog[] = records.map((r) => ({
-    id: crypto.randomUUID(),
-    created_at: now,
-    ...r,
-  }))
-
-  const updated = [...newLogs, ...existing]
-  writeLogs(updated)
-  return newLogs
+): Promise<void> {
+  if (records.length === 0) return
+  for (const r of records) {
+    await sql`
+      INSERT INTO attendance_logs (user_id, timestamp, status, verify, device_sn)
+      VALUES (${r.user_id}, ${r.timestamp}, ${r.status}, ${r.verify}, ${r.device_sn})
+    `
+  }
 }
 
-export function getLogs(limit = 100): AttendanceLog[] {
-  const logs = readLogs()
-  // Already stored newest-first; just slice
-  return logs.slice(0, limit)
+export async function getLogs(limit = 100): Promise<AttendanceLog[]> {
+  const rows = await sql`
+    SELECT id, user_id, timestamp, status, verify, device_sn, created_at
+    FROM attendance_logs
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  `
+  return rows as AttendanceLog[]
 }
