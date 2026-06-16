@@ -4,8 +4,11 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       { source: '/iclock/cdata', destination: '/api/iclock/cdata' },
+      { source: '/iclock/cdata.aspx', destination: '/api/iclock/cdata' },
       { source: '/iclock/getrequest', destination: '/api/iclock/getrequest' },
+      { source: '/iclock/getrequest.aspx', destination: '/api/iclock/getrequest' },
       { source: '/iclock/devicecmd', destination: '/api/iclock/devicecmd' },
+      { source: '/iclock/devicecmd.aspx', destination: '/api/iclock/devicecmd' },
     ]
   },
 };
