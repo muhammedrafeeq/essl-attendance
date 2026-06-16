@@ -3,7 +3,7 @@ import { dequeueCommand } from '@/lib/commands'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const sn = searchParams.get('SN') || 'unknown'
+  const sn = searchParams.get('SN') || searchParams.get('sn') || searchParams.get('serialno') || 'unknown'
 
   console.log(`[ESSL] GETREQUEST - SN: ${sn}`)
 

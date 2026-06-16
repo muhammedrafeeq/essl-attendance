@@ -4,9 +4,9 @@ import { upsertUsers } from '@/lib/users'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const sn = searchParams.get('SN') || 'unknown'
+  const sn = searchParams.get('SN') || searchParams.get('sn') || searchParams.get('serialno') || 'unknown'
 
-  console.log(`[ESSL] CDATA GET - SN: ${sn}`)
+  console.log(`[ESSL] CDATA GET - SN: ${sn}, full URL: ${request.url}`)
 
   const responseText = [
     'GET OPTION FROM:' + sn,
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const sn = searchParams.get('SN') || 'unknown'
+  const sn = searchParams.get('SN') || searchParams.get('sn') || searchParams.get('serialno') || 'unknown'
   const table = searchParams.get('table') || ''
 
   console.log(`[ESSL] CDATA POST - SN: ${sn}, table: ${table}`)
