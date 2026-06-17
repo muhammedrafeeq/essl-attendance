@@ -29,16 +29,17 @@ export default function Home() {
   const [filterDevice, setFilterDevice] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterUserId, setFilterUserId] = useState('')
-  const [filterFrom, setFilterFrom] = useState(() => new Date().toISOString().slice(0, 10))
-  const [filterTo, setFilterTo] = useState(() => new Date().toISOString().slice(0, 10))
+  const todayIST = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
+  const [filterFrom, setFilterFrom] = useState(todayIST)
+  const [filterTo, setFilterTo] = useState(todayIST)
 
   const fetchLogs = useCallback(async () => {
     const params = new URLSearchParams()
     if (filterDevice) params.set('device', filterDevice)
     if (filterStatus) params.set('status', filterStatus)
     if (filterUserId) params.set('user_id', filterUserId)
-    if (filterFrom) params.set('from', `${filterFrom}T00:00:00`)
-    if (filterTo) params.set('to', `${filterTo}T23:59:59`)
+    if (filterFrom) params.set('from', `${filterFrom}T00:00:00+05:30`)
+    if (filterTo) params.set('to', `${filterTo}T23:59:59+05:30`)
 
     try {
       const res = await fetch(`/api/logs?${params}`)
@@ -135,8 +136,8 @@ export default function Home() {
               setFilterDevice('')
               setFilterStatus('')
               setFilterUserId('')
-              setFilterFrom(new Date().toISOString().slice(0, 10))
-              setFilterTo(new Date().toISOString().slice(0, 10))
+              setFilterFrom(todayIST())
+              setFilterTo(todayIST())
             }}
             className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
@@ -177,7 +178,7 @@ export default function Home() {
                   {logs.map((log) => (
                     <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 font-medium text-gray-900">{log.user_id}</td>
-                      <td className="px-6 py-4 text-gray-700">{new Date(log.timestamp).toLocaleString()}</td>
+                      <td className="px-6 py-4 text-gray-700">{new Date(log.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[log.status] ?? 'bg-gray-100 text-gray-800'}`}>
                           {statusLabel[log.status] ?? `Status ${log.status}`}
@@ -185,7 +186,7 @@ export default function Home() {
                       </td>
                       <td className="px-6 py-4 text-gray-500">{log.verify}</td>
                       <td className="px-6 py-4 font-mono text-xs text-gray-500">{log.device_sn}</td>
-                      <td className="px-6 py-4 text-gray-500">{new Date(log.created_at).toLocaleString()}</td>
+                      <td className="px-6 py-4 text-gray-500">{new Date(log.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
                     </tr>
                   ))}
                 </tbody>
