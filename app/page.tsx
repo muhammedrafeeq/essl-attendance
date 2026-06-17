@@ -29,12 +29,16 @@ export default function Home() {
   const [filterDevice, setFilterDevice] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterUserId, setFilterUserId] = useState('')
+  const [filterFrom, setFilterFrom] = useState(() => new Date().toISOString().slice(0, 10))
+  const [filterTo, setFilterTo] = useState(() => new Date().toISOString().slice(0, 10))
 
   const fetchLogs = useCallback(async () => {
     const params = new URLSearchParams()
     if (filterDevice) params.set('device', filterDevice)
     if (filterStatus) params.set('status', filterStatus)
     if (filterUserId) params.set('user_id', filterUserId)
+    if (filterFrom) params.set('from', `${filterFrom}T00:00:00`)
+    if (filterTo) params.set('to', `${filterTo}T23:59:59`)
 
     try {
       const res = await fetch(`/api/logs?${params}`)
@@ -47,7 +51,7 @@ export default function Home() {
     } finally {
       setLoading(false)
     }
-  }, [filterDevice, filterStatus, filterUserId])
+  }, [filterDevice, filterStatus, filterUserId, filterFrom, filterTo])
 
   useEffect(() => {
     fetchLogs()
@@ -108,8 +112,32 @@ export default function Home() {
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">From</label>
+            <input
+              type="date"
+              value={filterFrom}
+              onChange={(e) => setFilterFrom(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">To</label>
+            <input
+              type="date"
+              value={filterTo}
+              onChange={(e) => setFilterTo(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <button
-            onClick={() => { setFilterDevice(''); setFilterStatus(''); setFilterUserId('') }}
+            onClick={() => {
+              setFilterDevice('')
+              setFilterStatus('')
+              setFilterUserId('')
+              setFilterFrom(new Date().toISOString().slice(0, 10))
+              setFilterTo(new Date().toISOString().slice(0, 10))
+            }}
             className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Clear filters

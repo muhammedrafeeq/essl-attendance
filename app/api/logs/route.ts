@@ -10,12 +10,17 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '200'), 500)
 
   try {
-    const rows = await sql`
+    const from = searchParams.get('from')
+  const to = searchParams.get('to')
+
+  const rows = await sql`
       SELECT id, user_id, timestamp, status, verify, device_sn, created_at
       FROM attendance_logs
       WHERE (${device}::text IS NULL OR device_sn = ${device})
         AND (${status}::text IS NULL OR status = ${status})
         AND (${userId}::text IS NULL OR user_id = ${userId})
+        AND (${from}::text IS NULL OR timestamp >= ${from}::timestamptz)
+        AND (${to}::text IS NULL OR timestamp <= ${to}::timestamptz)
       ORDER BY created_at DESC
       LIMIT ${limit}
     `

@@ -16,13 +16,11 @@ try {
 } catch { /* no .env.local */ }
 
 const sql = neon(process.env.DATABASE_URL)
-const rows = await sql`SELECT user_id, timestamp, status, device_sn, created_at FROM attendance_logs ORDER BY created_at DESC LIMIT 2`
+const [{ count }] = await sql`SELECT COUNT(*) as count FROM attendance_logs`
+const rows = await sql`SELECT user_id, timestamp, status, device_sn FROM attendance_logs ORDER BY created_at DESC LIMIT 10`
 
-if (rows.length === 0) {
-  console.log('No records in DB.')
-} else {
-  console.log(`${rows.length} records found:\n`)
-  for (const r of rows) {
-    console.log(`User: ${r.user_id} | ${r.timestamp} | ${r.status} | ${r.device_sn}`)
-  }
+console.log(`Total records: ${count}\n`)
+console.log('Latest 10:')
+for (const r of rows) {
+  console.log(`User: ${r.user_id} | ${r.timestamp} | ${r.status} | ${r.device_sn}`)
 }
