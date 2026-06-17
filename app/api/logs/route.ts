@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
       WHERE (${device}::text IS NULL OR device_sn = ${device})
         AND (${status}::text IS NULL OR status = ${status})
         AND (${userId}::text IS NULL OR user_id = ${userId})
-        AND (${from}::text IS NULL OR timestamp >= ${from}::timestamptz)
-        AND (${to}::text IS NULL OR timestamp <= ${to}::timestamptz)
+        AND (${from}::text IS NULL OR timestamp::timestamptz >= ${from}::timestamptz)
+        AND (${to}::text IS NULL OR timestamp::timestamptz <= ${to}::timestamptz)
       ORDER BY created_at DESC
       LIMIT ${limit}
     `
